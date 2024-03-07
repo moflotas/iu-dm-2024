@@ -1,0 +1,144 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Timofey Sedov}
+\author{08.02.2004}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Abstract}
+This report represents the solution of
+\href{https://moodle.innopolis.university/pluginfile.php/193734/mod_resource/content/2/GT1spr2
+    4.pdf}{ The first practice assignment on Game Theory }. The aim of the
+assignment is to implement a backward induction algorithm for the
+\href{https://en.wikipedia.org/wiki/Dynamic_programming#egg_dropping_puzzle}{Dropping
+    Bricks Puzzle}.
+
+\section{Manual}
+The source code of the solution is represented by a singe python script.
+Assuming, you have pre-installed \verb|python3.11| the script can be ran by
+executing the following command in the terminal:
+
+\begin{verbatim}
+    python TimofeySedov.py
+\end{verbatim}
+
+The cli-interface will give you further instructions on how to use the script.
+
+Another options are:
+\begin{itemize}
+    \item \verb|python TimofeySedov.py --help| to get the list of available options
+    \item \verb|python TimofeySedov.py --height HEIGHT| to play game with the explicitly specified height
+    \item \verb|python TimofeySedov.py --test| to run the test suite which will test the solution using dynamic programming approach
+    \item \verb|python TimofeySedov.py --test --height HEIGHT| to run the test suite with the specified height
+\end{itemize}
+
+\section{Implemented methods}
+\subsection{Methods description}
+The solution contains the following methods:
+\begin{itemize}
+    \item \verb|solve_min_drops_optimal| is a dynamic programming solution for dropping bricks puzzle deciding on the minimal number of drops given height and number of bricks
+    \item \verb|solve_backward_induction| is a backward induction algorithm for the dropping bricks puzzle returning whether it is possible to find a mechanical strength of a brick for a given height, number of drops and number of bricks
+    \item \verb|run_tests| is a function, which can test given function against dynamic programming solution, which as an arguments takes function returning whether there exists optimal strategy for a given height, number of drops and number of bricks, max height to test, drop range around the optimal height and number of bricks given at the start of the game
+    \item \verb|play_game| is a function, which allows to play the game with the computer. Takes height as an argument
+\end{itemize}
+
+\subsection{Ideas behind the methods and the solution}
+You can find the detailed explanation of the implemented methods in the source
+code, but I am going to give a brief overview of the
+\verb|solve_backward_induction| and \verb|play_game| methods.
+
+\subsubsection{solve\_backward\_induction}
+The method is using the 4d array which is representing the game state. After
+defining the final positions for the player A as \verb|True|, the method
+iterates over all possible not final positions and checks whether there exists
+a move which in case of the opponent's optimal strategy still leads to the
+final position. If such a move exists, the current position is also considered
+as final. The method returns whether the initial position is final. And the 4d
+array
+
+\subsubsection{play\_game}
+The method is using the \verb|solve_backward_induction| method to decide on the
+optimal strategy for the computer. This method utilizes so called recovering
+the solution approach to decide on the next move of the computer.
+
+\section{Game Formal model}
+
+\subsection{Finite Position Game Definition}
+
+As mentioned in \href{
+    https://moodle.innopolis.university/pluginfile.php/193734/mod_resource/content/2/GT1spr24.pdf#page=16}{
+    Lecture Notes 1 page 16 } Finite Position Game for 2 players can be defined as
+a tuple:
+\[
+    G = (P_A, P_B, M_A, M_B, F_A, F_B)
+\]
+Where:
+\begin{itemize}
+    \item $P_A$ and $P_B$ are disjoint finite sets of positions for players A and B
+    \item $M_A$ and $M_B$ are admissible moves players A and B
+    \item $F_A$ and $F_B$ are disjoint final positions
+\end{itemize}
+
+Let us proceed with the formal definition of the game in case of a
+\href{https://moodle.innopolis.university/pluginfile.php/193734/mod_resource/content/2/GT1spr24.pdf#page=36}{Dropping
+    Bricks Puzzle}
+
+\subsection{Dropping Bricks Puzzle}
+
+Let us assume, that the maximum height of the building is $H$ and maximum
+number of drops is $D$. Now we can define positions for a players A and B as
+follows:
+\[
+    P_A = (d, b, s, u) \;  P_B = (d, b, s, u, h)
+\]
+Where:
+\begin{itemize}
+    \item player A is a computer trying to find the mechanical strength of a brick and
+          player B is a human
+
+    \item $d$ is the number of drops left, $0 \leq d \leq D, d \in \mathbb{Z}$
+    \item $b$ is the number of bricks left $0 \leq b \leq 2, b \in \mathbb{Z}$
+    \item $s$ is the known safe height $1 \leq s \leq H, s \in \mathbb{Z}$
+    \item $u$ is the known unsafe height $s < u \leq H + 1, u \in \mathbb{Z}$
+    \item $h$ is the height of the drop $s < h < u, h \in \mathbb{Z}$
+\end{itemize}
+
+The initial position for the game is $(D, 2, 1, H + 1)$
+
+Now we can define the set of admissible moves for players A and B as follows:
+\begin{align*}
+    M_A =  \{ ((d, b, s, u), ( & d - 1, b, s, u, h)) \; |                                                              \\
+                               & | \; 1 \leq d \leq D, 1 \leq b \leq 2, 1 \leq s \leq H, s < u \leq H + 1, s < h < u\}
+\end{align*}
+and
+\begin{align*}
+    M_B = \{ ((d, b, s, u, h), (   & d, b, h, u)) \; |                                                                          \\
+                                   & | \; 0 \leq d < D, 1 \leq b \leq 2, 1 \leq s \leq H, s < u \leq H + 1, s < h < u\} \; \cup \\
+    \cup \; \{ ((d, b, s, u, h), ( & d, b - 1, s, h)) \; |                                                                      \\
+                                   & | \; 0 \leq d < D, 1 \leq b \leq 2, 1 \leq s \leq H, s < u \leq H + 1, s < h < u\}
+\end{align*}
+
+Finally, we can define the set of final positions for players A and B as
+follows:
+
+\[
+    F_A = \{ (d, b, s, u) \; | \; (d, b, s, u) \in P_A \text{ and } u - s = 1\}
+\]
+and
+\[
+    F_B = \{ (d, b, s, u) \in P_A \setminus F_A \; | \; d = 0 \text{ or } b = 0\}
+\]
+asdfsdf
+\end{document}
